@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function ImageLinkForm({onInputChange}) {
+export default function ImageLinkForm({onInputChange,onButtonSubmit,value}) {
     return (
         <div className='ma4 mt0'>
             <p className='f3'>
@@ -10,8 +10,14 @@ export default function ImageLinkForm({onInputChange}) {
                 <div className=' center pa4 br3 shadow-5'>
                     <input 
                         onChange={onInputChange}
-                        className='f3 pa2 w-70 center' type='text' />
-                    <button className='w-30 grow f4 link ph3 pv2 dib white bg-light-purple' >Detect</button>
+                        className='f3 pa2 w-70 center'
+                        type='text'
+                        value={value}
+                        
+                        />
+                    <button 
+                        onClick={onButtonSubmit}
+                        className='w-30 grow f4 link ph3 pv2 dib white bg-light-purple' >Detect</button>
                 </div>
             </div>
         </div>
