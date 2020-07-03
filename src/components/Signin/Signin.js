@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom'
 
-export default function Signin({ onRouteChange, loadUser }) {
+export default function Signin({ onSignIn }) {
+    let history = useHistory();
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [email, setEmail] = useState('ginobili@gmail.com')
+    const [password, setPassword] = useState('ginobili')
 
     function onEmailChange(e) {
         setEmail(e.target.value)
@@ -13,13 +15,13 @@ export default function Signin({ onRouteChange, loadUser }) {
         setPassword(e.target.value)
     }
     function onSubmitSignIn() {
-        fetch('http://localhost:3002/signin',{
-            method:'post',
-            headers:{
-                'Content-Type':'application/json',
+        fetch('http://localhost:3002/signin', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': 'http://localhost:3002'
             },
-            body : JSON.stringify({
+            body: JSON.stringify({
                 email,
                 password
             })
@@ -27,13 +29,11 @@ export default function Signin({ onRouteChange, loadUser }) {
             .then(response => response.json())
             .then(user => {
                 if (user.id) {
-                    loadUser(user)
-                    onRouteChange('home')
+                    onSignIn(user)
+                    history.push('profile')
                 }
             })
-
     }
-
 
     return (
         <article className="br3 ba b--black-10 mv4 w-100 w-50-m w-25-l mw6 shadow-5 center">
@@ -43,14 +43,19 @@ export default function Signin({ onRouteChange, loadUser }) {
                         <legend className="f1 fw6 ph0 mh0">Sign In</legend>
                         <div className="mt3">
                             <label className="db fw6 lh-copy f6" htmlFor="email-address">Email</label>
-                            <input 
-                                onChange={onEmailChange} className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="email" name="email-address" id="email-address" />
+                            <input
+                                className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100"
+                                type="email"
+                                name="email-address"
+                                onChange={onEmailChange}
+                                value={email}
+                                id="email-address" />
                         </div>
 
                         <div className="mv3">
-                            <label 
-                               className="db fw6 lh-copy f6" htmlFor="password">Password</label>
-                            <input  onChange={onPasswordChange} className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="password" name="password" id="password" />
+                            <label
+                                className="db fw6 lh-copy f6" htmlFor="password">Password</label>
+                            <input value={password} onChange={onPasswordChange} className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="password" name="password" id="password" />
                         </div>
                     </fieldset>
                     <div className="">
@@ -63,7 +68,12 @@ export default function Signin({ onRouteChange, loadUser }) {
 
                     </div>
                     <div className="lh-copy mt3">
-                        <p onClick={() => onRouteChange('register')} className="f6 link dim black db pointer">Register</p>
+                        <p
+                            onClick={() => history.push('register')}
+                            className="f6 link dim black db pointer"
+                        >
+                            Register
+                        </p>
                     </div>
                 </div>
             </main>

@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom'
 
-export default function Register({ onRouteChange, loadUser }) {
+export default function Register({ onSignIn }) {
 
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
+    const history = useHistory()
 
     function onNameChange(e) {
         setName(e.target.value)
@@ -33,8 +35,8 @@ export default function Register({ onRouteChange, loadUser }) {
         }).then(response => response.json()
             .then(user => {
                 if (user.id) {
-                    onRouteChange('home')
-                    loadUser(user)
+                    onSignIn(user)
+                    history.push('profile')
                 }
             })
         )

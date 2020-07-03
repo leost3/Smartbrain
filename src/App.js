@@ -1,16 +1,18 @@
 import './App.css'
 
 import React, { useEffect, useState } from 'react'
-import Particles from 'react-particles-js'
+import {
+  BrowserRouter as Router,
+  Redirect,
+  Route,
+  Switch,
+  useHistory,
+} from 'react-router-dom'
 
-import FaceRecognition from './components/FaceRecognition/FaceRecognition'
-import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm'
-import Logo from './components/Logo/Logo'
 import Navigation from './components/Navigation/Navigation'
-import Rank from './components/Rank/Rank'
 import Register from './components/Register/Register'
 import Signin from './components/Signin/Signin'
-
+import Profile from './pages/Profile'
 
 const partcilesOptions = {
   partciles: {
@@ -39,7 +41,7 @@ function App() {
   const [imageUrl, setImageUrl] = useState('')
   const [box, setBox] = useState({})
   const [route, setRoute] = useState('signin')
-  const [isSignedin, setIsSignedin] = useState(true)
+  const [isSignedin, setIsSignedin] = useState(false)
   const [user, setUser] = useState({
     id: '',
     name: '',
@@ -48,6 +50,8 @@ function App() {
     entries: 0,
     joined: ''
   })
+
+  const history = useHistory()
 
   function calculateFaceLocation(data) {
     const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box
@@ -93,16 +97,16 @@ function App() {
 
   function onButtonSubmit(event) {
     setImageUrl(input)
-      fetch('http://localhost:3002/imageUrl', {
-        method: 'put',
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'http://localhost:3002'
-        },
-        body: JSON.stringify({
-          input
-        })
+    fetch('http://localhost:3002/imageUrl', {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': 'http://localhost:3002'
+      },
+      body: JSON.stringify({
+        input
       })
+    })
       .then(response => response.json())
       .then(response => {
         if (response) {
@@ -113,56 +117,68 @@ function App() {
       .catch(err => console.error(err))
   }
 
-  function onRouteChange(route) {
-    if (route === 'signout') {
-      setIsSignedin(false)
-      setUser(initialUser)
-      setBox({})
-      setImageUrl('')
-      
-    } else if (route === 'home') {
-      setIsSignedin(true)
-    }
-    setRoute(route)
+  function onSignIn(user) {
+    setIsSignedin(true)
+    setUser(user)
+  }
+
+
+  function onSignOut() {
+    setIsSignedin(false)
+    setUser(initialUser)
+    setBox({})
+    setImageUrl('');
+    console.log(history)
+
+  }
+
+  function PrivateRoute({ children, ...rest }) {
+    return (
+      <Route
+        {...rest}
+        render={({ location }) =>
+          isSignedin ? (
+            children
+          ) : (
+            <Redirect
+              to={{
+                pathname: "/",
+                state: { from: location }
+              }}
+            />
+          )
+        }
+      />
+    );
   }
 
   return (
-    <div className="App">
-      <Particles
-        className='particles'
-        params={partcilesOptions} />
+    <Router>
       <Navigation
         isSignedIn={isSignedin}
-        onRouteChange={onRouteChange}
+        onSignOut={onSignOut}
       />
-      {route === 'home'
-        ?
-        <>
-          {JSON.stringify(user)}
-          <Logo />
-          <Rank name={user.name} entries={user.entries} />
-          <ImageLinkForm
+      <Switch>
+        <Route path='/' exact>
+          <Signin onSignIn={onSignIn} />
+        </Route>
+        <Route path='/register' exact>
+          <Register onSignIn={onSignIn} onSignOut={onSignOut} />
+        </Route>
+        <PrivateRoute path='/profile' exact>
+          <Profile
+            partcilesOptions={partcilesOptions}
+            name={user.name}
+            entries={user.entries}
             value={input}
             onInputChange={onInputChange}
             onButtonSubmit={onButtonSubmit}
-          />
-          <FaceRecognition
             imageUrl={imageUrl}
             box={box}
           />
-        </>
-
-        : (
-          route === 'signin'
-            ? <Signin loadUser={setUser} onRouteChange={onRouteChange} />
-            : <Register loadUser={setUser} onRouteChange={onRouteChange} />
-        )
-
-
-      }
-
-
-    </div>
+        </PrivateRoute>
+      </Switch>
+    </Router>
   );
 }
 
